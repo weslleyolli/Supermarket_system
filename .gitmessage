@@ -1,0 +1,19 @@
+# <tipo>(<escopo>): <descrição>
+#
+# <corpo da mensagem>
+#
+# <rodapé>
+#
+# Tipos:
+# feat: nova funcionalidade
+# fix: correção de bug
+# docs: documentação
+# style: formatação
+# refactor: refatoração
+# test: testes
+# chore: tarefas de manutenção
+#
+# Exemplos:
+# feat(auth): adiciona sistema de login
+# fix(pdv): corrige cálculo de desconto
+# docs(api): atualiza documentação da API
