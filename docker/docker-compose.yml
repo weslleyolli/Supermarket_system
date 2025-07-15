@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/supermarket_db
+    depends_on:
+      - db
+    volumes:
+      - ../app:/app/app
+    networks:
+      - supermarket-network
+
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: supermarket_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - supermarket-network
+
+  streamlit:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    command: streamlit run app/ui/main.py --server.port=8501 --server.address=0.0.0.0
+    ports:
+      - "8501:8501"
+    depends_on:
+      - app
+    volumes:
+      - ../app:/app/app
+    networks:
+      - supermarket-network
+
+volumes:
+  postgres_data:
+
+networks:
+  supermarket-network:
+    driver: bridge
