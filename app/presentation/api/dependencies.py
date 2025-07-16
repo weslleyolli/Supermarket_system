@@ -72,3 +72,15 @@ def require_admin(current_user: User = Depends(get_current_active_user)):
             detail="Access denied: Admin privileges required",
         )
     return current_user
+
+
+def require_supervisor(current_user: User = Depends(get_current_active_user)):
+    """Dependência para verificar se o usuário atual é supervisor ou admin"""
+    from app.infrastructure.database.models.user import UserRole
+
+    if current_user.role not in [UserRole.ADMIN, UserRole.SUPERVISOR]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied: Supervisor or Admin privileges required",
+        )
+    return current_user
