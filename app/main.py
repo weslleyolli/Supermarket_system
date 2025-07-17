@@ -1,4 +1,5 @@
 from fastapi import Depends, FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
 from app.infrastructure.database.connection import get_db
@@ -8,22 +9,28 @@ from app.infrastructure.database.models import (  # noqa: F401
     Sale,
     User,
 )
-from app.presentation.api.v1.auth import router as auth_router
-from app.presentation.api.v1.pdv import router as pdv_router
-from app.presentation.api.v1.products import router as products_router
-from app.presentation.api.v1.sales import router as sales_router
+from app.presentation.api.v1 import api_router
 
 app = FastAPI(
     title="Sistema de Supermercado",
-    description="API para gerenciamento de supermercado com autenticação e produtos",  # ← ATUALIZAR DESCRIÇÃO
+    description="API para gerenciamento de supermercado com autenticação e produtos",
     version="1.0.0",
 )
 
-# Incluir routers
-app.include_router(auth_router, prefix="/api/v1")
-app.include_router(products_router, prefix="/api/v1")
-app.include_router(pdv_router, prefix="/api/v1")
-app.include_router(sales_router, prefix="/api/v1")
+# 🔧 ADICIONAR CORS MIDDLEWARE
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:3000",
+        "http://localhost:3001",  # 👈 ADICIONAR esta linha!
+    ],  # Frontend URL
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],  # 👈 INCLUIR OPTIONS!
+    allow_headers=["*"],
+)
+
+# Incluir apenas o router central da v1
+app.include_router(api_router, prefix="/api/v1")
 
 
 @app.get("/")

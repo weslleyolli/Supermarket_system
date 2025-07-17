@@ -8,9 +8,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.application.services.sale_service import SaleService
+from app.core.deps import get_current_user
 from app.infrastructure.database.connection import get_db
-from app.presentation.api.dependencies import get_current_active_user
-from app.presentation.schemas.auth import UserResponse
 from app.presentation.schemas.sale import (
     BarcodeInput,
     Cart,
@@ -19,16 +18,14 @@ from app.presentation.schemas.sale import (
     PaymentResponse,
 )
 
-router = APIRouter(prefix="/pdv", tags=["PDV - Ponto de Venda"])
+router = APIRouter(tags=["PDV - Ponto de Venda"])
 
 
 def get_sale_service(db: Session = Depends(get_db)) -> SaleService:
     # Função modificada para receber user_id dinamicamente
     from fastapi import Request
 
-    def _service(
-        request: Request, current_user: UserResponse = Depends(get_current_active_user)
-    ):
+    def _service(request: Request, current_user=Depends(get_current_user)):
         return SaleService(db, user_id=current_user.id)
 
     return _service
@@ -38,7 +35,7 @@ def get_sale_service(db: Session = Depends(get_db)) -> SaleService:
 async def add_product_to_cart(
     barcode_input: BarcodeInput,
     db: Session = Depends(get_db),
-    current_user: UserResponse = Depends(get_current_active_user),
+    current_user=Depends(get_current_user),
 ):
     try:
         sale_service = SaleService(db, user_id=current_user.id)
@@ -51,7 +48,7 @@ async def add_product_to_cart(
 @router.get("/cart", response_model=Cart)
 async def get_current_cart(
     db: Session = Depends(get_db),
-    current_user: UserResponse = Depends(get_current_active_user),
+    current_user=Depends(get_current_user),
 ):
     sale_service = SaleService(db, user_id=current_user.id)
     return sale_service.get_current_cart()
@@ -61,7 +58,7 @@ async def get_current_cart(
 async def update_cart(
     operation: CartOperation,
     db: Session = Depends(get_db),
-    current_user: UserResponse = Depends(get_current_active_user),
+    current_user=Depends(get_current_user),
 ):
     try:
         sale_service = SaleService(db, user_id=current_user.id)
@@ -74,7 +71,7 @@ async def update_cart(
 async def process_payment(
     payment_request: PaymentRequest,
     db: Session = Depends(get_db),
-    current_user: UserResponse = Depends(get_current_active_user),
+    current_user=Depends(get_current_user),
 ):
     try:
         sale_service = SaleService(db, user_id=current_user.id)

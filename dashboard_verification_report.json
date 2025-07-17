@@ -1,0 +1,176 @@
+{
+  "timestamp": "2025-07-16T21:30:10.772930",
+  "database": {
+    "connected": true,
+    "counts": {
+      "users": 4,
+      "products": 10,
+      "sales": 29,
+      "categories": 11,
+      "customers": 3
+    }
+  },
+  "api": {
+    "/reports/dashboard": {
+      "status": "\u2705 OK",
+      "data": {
+        "today_sales": 0,
+        "total_revenue": 0.0,
+        "products_sold": 0,
+        "customers_served": 0,
+        "average_ticket": 0.0,
+        "low_stock_alerts": 0,
+        "recent_sales": [],
+        "top_products": [],
+        "sales_by_period": {
+          "daily": 0,
+          "weekly": 0,
+          "monthly": 0
+        }
+      }
+    },
+    "/reports/kpis": {
+      "status": "\u2705 OK",
+      "data": {
+        "total_sales": 0,
+        "total_revenue": 0.0,
+        "total_products": 0,
+        "low_stock_alerts": 0
+      }
+    },
+    "/reports/sales": {
+      "status": "\u2705 OK",
+      "data": {
+        "sales": [
+          {
+            "id": 3,
+            "total": 48.45,
+            "created_at": "2025-07-16T16:43:14.809347",
+            "status": "COMPLETED"
+          },
+          {
+            "id": 5,
+            "total": 16.3,
+            "created_at": "2025-07-16T11:59:50.385936",
+            "status": "COMPLETED"
+          },
+          {
+            "id": 4,
+            "total": 14.79,
+            "created_at": "2025-07-16T11:39:50.385936",
+            "status": "COMPLETED"
+          },
+          {
+            "id": 6,
+            "total": 14.97,
+            "created_at": "2025-07-16T10:50:50.385936",
+            "status": "COMPLETED"
+          },
+          {
+            "id": 2,
+            "total": 48.45,
+            "created_at": "2025-07-16T01:28:37.469714",
+            "status": "COMPLETED"
+          },
+          {
+            "id": 1,
+            "total": 48.45,
+            "created_at": "2025-07-16T01:20:37.396427",
+            "status": "COMPLETED"
+          },
+          {
+            "id": 7,
+            "total": 50.269999999999996,
+            "created_at": "2025-07-15T18:55:50.401969",
+            "status": "COMPLETED"
+          },
+          {
+            "id": 8,
+            "total": 5.98,
+            "created_at": "2025-07-15T13:22:50.401969",
+            "status": "COMPLETED"
+          },
+          {
+            "id": 9,
+            "total": 8.5,
+            "created_at": "2025-07-15T12:41:50.401969",
+            "status": "COMPLETED"
+          },
+          {
+            "id": 11,
+            "total": 8.97,
+            "created_at": "2025-07-14T20:23:50.414938",
+            "status": "COMPLETED"
+          },
+          {
+            "id": 10,
+            "total": 18.5115,
+            "created_at": "2025-07-14T14:51:50.414938",
+            "status": "COMPLETED"
+          },
+          {
+            "id": 15,
+            "total": 17.802000000000003,
+            "created_at": "2025-07-13T20:51:50.419286",
+            "status": "COMPLETED"
+          },
+          {
+            "id": 14,
+            "total": 53.589000000000006,
+            "created_at": "2025-07-13T20:41:50.419286",
+            "status": "COMPLETED"
+          },
+          {
+            "id": 12,
+            "total": 29.380000000000003,
+            "created_at": "2025-07-13T12:29:50.419286",
+            "status": "COMPLETED"
+          },
+          {
+            "id": 13,
+            "total": 17.0,
+            "created_at": "2025-07-13T11:19:50.419286",
+            "status": "COMPLETED"
+          },
+          {
+            "id": 16,
+            "total": 10.5667,
+            "created_at": "2025-07-13T09:01:50.419286",
+            "status": "COMPLETED"
+          },
+          {
+            "id": 21,
+            "total": 32.8,
+            "created_at": "2025-07-12T18:36:50.433633",
+            "status": "COMPLETED"
+          },
+          {
+            "id": 19,
+            "total": 23.96,
+            "created_at": "2025-07-12T17:15:50.433633",
+            "status": "COMPLETED"
+          },
+          {
+            "id": 17,
+            "total": 36.8,
+            "created_at": "2025-07-12T16:50:50.433633",
+            "status": "COMPLETED"
+          },
+          {
+            "id": 18,
+            "total": 47.7,
+            "created_at": "2025-07-12T16:21:50.433633",
+            "status": "COMPLETED"
+          }
+        ]
+      }
+    },
+    "/reports/stock-alerts": {
+      "status": "\u2705 OK",
+      "data": {
+        "alerts_count": 0,
+        "alerts": []
+      }
+    }
+  }
+}
