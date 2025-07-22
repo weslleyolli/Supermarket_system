@@ -2,7 +2,16 @@
 Modelos de produto e categoria
 """
 
-from sqlalchemy import Boolean, Column, Float, ForeignKey, Integer, String, Text
+from sqlalchemy import (
+    Boolean,
+    Column,
+    DateTime,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+)
 from sqlalchemy.orm import relationship
 
 from .base import BaseModel
@@ -53,9 +62,21 @@ class Product(BaseModel):
     bulk_min_quantity = Column(Float, default=10)
     bulk_discount_percentage = Column(Float, default=5.0)
 
+    # ✅ NOVAS COLUNAS PARA ESTOQUE:
+    supplier_id = Column(Integer, ForeignKey("suppliers.id"), nullable=True)
+    profit_margin = Column(Float, nullable=True)  # Margem de lucro %
+    weight = Column(Float, nullable=True)  # Peso em kg
+    dimensions = Column(String(100), nullable=True)  # Dimensões
+    location = Column(String(100), nullable=True)  # Localização no estoque
+    reorder_point = Column(Integer, nullable=True)  # Ponto de reposição
+    max_stock = Column(Integer, nullable=True)  # Estoque máximo
+    last_purchase_date = Column(DateTime(timezone=True), nullable=True)
+    last_sale_date = Column(DateTime(timezone=True), nullable=True)
+
     # Status
     is_active = Column(Boolean, default=True, nullable=False)
 
     # Relacionamentos
     category = relationship("Category", back_populates="products")
+    # supplier = relationship("Supplier", back_populates="products", lazy="select")  # Comentado temporariamente
     sale_items = relationship("SaleItem", back_populates="product")

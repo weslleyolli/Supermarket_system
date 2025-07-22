@@ -21,27 +21,31 @@ async def get_dashboard(
     )
 
     try:
-        # Total de vendas
-        print("DEBUG: Executando query - total de vendas")
-        print("DEBUG: Query: SELECT COUNT(*) FROM sales WHERE status = 'COMPLETED'")
-        total_sales_result = db.execute(
-            text("SELECT COUNT(*) FROM sales WHERE status = 'COMPLETED'")
-        )
-        total_sales = total_sales_result.scalar() or 0
-        print(f"DEBUG: Total de vendas RESULTADO: {total_sales}")
-
-        # Receita total
-        print("DEBUG: Executando query - receita total")
+        # Total de vendas DE HOJE
+        print("DEBUG: Executando query - vendas de hoje")
         print(
-            "DEBUG: Query: SELECT COALESCE(SUM(final_amount), 0) FROM sales WHERE status = 'COMPLETED'"
+            "DEBUG: Query: SELECT COUNT(*) FROM sales WHERE status = 'COMPLETED' AND DATE(created_at) = CURRENT_DATE"
         )
-        total_revenue_result = db.execute(
+        today_sales_result = db.execute(
             text(
-                "SELECT COALESCE(SUM(final_amount), 0) FROM sales WHERE status = 'COMPLETED'"
+                "SELECT COUNT(*) FROM sales WHERE status = 'COMPLETED' AND DATE(created_at) = CURRENT_DATE"
             )
         )
-        total_revenue = float(total_revenue_result.scalar() or 0.0)
-        print(f"DEBUG: Receita total RESULTADO: {total_revenue}")
+        today_sales = today_sales_result.scalar() or 0
+        print(f"DEBUG: Vendas de hoje RESULTADO: {today_sales}")
+
+        # Receita DE HOJE
+        print("DEBUG: Executando query - receita de hoje")
+        print(
+            "DEBUG: Query: SELECT COALESCE(SUM(final_amount), 0) FROM sales WHERE status = 'COMPLETED' AND DATE(created_at) = CURRENT_DATE"
+        )
+        today_revenue_result = db.execute(
+            text(
+                "SELECT COALESCE(SUM(final_amount), 0) FROM sales WHERE status = 'COMPLETED' AND DATE(created_at) = CURRENT_DATE"
+            )
+        )
+        today_revenue = float(today_revenue_result.scalar() or 0.0)
+        print(f"DEBUG: Receita de hoje RESULTADO: {today_revenue}")
 
         # Total de produtos
         print("DEBUG: Executando query - total de produtos")
@@ -59,17 +63,17 @@ async def get_dashboard(
         low_stock_alerts = low_stock_result.scalar() or 0
         print(f"DEBUG: Alertas de estoque baixo RESULTADO: {low_stock_alerts}")
 
-        # Vendas recentes (últimas 5)
-        print("DEBUG: Executando query - vendas recentes")
+        # Vendas recentes DE HOJE (últimas 5)
+        print("DEBUG: Executando query - vendas recentes de hoje")
         print(
-            "DEBUG: Query: SELECT id, final_amount, created_at FROM sales WHERE status = 'COMPLETED' ORDER BY created_at DESC LIMIT 5"
+            "DEBUG: Query: SELECT id, final_amount, created_at FROM sales WHERE status = 'COMPLETED' AND DATE(created_at) = CURRENT_DATE ORDER BY created_at DESC LIMIT 5"
         )
         recent_sales_result = db.execute(
             text(
                 """
             SELECT id, final_amount, created_at
             FROM sales
-            WHERE status = 'COMPLETED'
+            WHERE status = 'COMPLETED' AND DATE(created_at) = CURRENT_DATE
             ORDER BY created_at DESC
             LIMIT 5
         """
@@ -86,21 +90,85 @@ async def get_dashboard(
             )
         print(f"DEBUG: Vendas recentes encontradas RESULTADO: {len(recent_sales)}")
 
+        # Produtos mais vendidos (TOP 5 de todos os tempos)
+        print("DEBUG: Executando query - top produtos mais vendidos")
+        top_products_result = db.execute(
+            text(
+                """
+                SELECT
+                    p.name,
+                    p.price,
+                    COALESCE(SUM(si.quantity), 0) as total_sold,
+                    COUNT(DISTINCT s.id) as times_sold
+                FROM products p
+                LEFT JOIN sale_items si ON p.id = si.product_id
+                LEFT JOIN sales s ON si.sale_id = s.id AND s.status = 'COMPLETED'
+                WHERE p.is_active = true
+                GROUP BY p.id, p.name, p.price
+                HAVING SUM(si.quantity) > 0
+                ORDER BY total_sold DESC, times_sold DESC
+                LIMIT 5
+            """
+            )
+        )
+
+        top_products = []
+        for row in top_products_result:
+            top_products.append(
+                {
+                    "name": row[0],
+                    "price": float(row[1]) if row[1] else 0.0,
+                    "quantity_sold": int(row[2]) if row[2] else 0,
+                    "times_sold": int(row[3]) if row[3] else 0,
+                }
+            )
+        print(f"DEBUG: Top produtos encontrados RESULTADO: {len(top_products)}")
+
+        # Se não houver vendas, mostrar produtos mais populares (maior estoque inicial)
+        if len(top_products) == 0:
+            print(
+                "DEBUG: Nenhuma venda encontrada, buscando produtos populares por estoque"
+            )
+            popular_products_result = db.execute(
+                text(
+                    """
+                    SELECT name, price, stock_quantity, 0 as quantity_sold, 0 as times_sold
+                    FROM products
+                    WHERE is_active = true
+                    ORDER BY stock_quantity DESC
+                    LIMIT 5
+                """
+                )
+            )
+
+            for row in popular_products_result:
+                top_products.append(
+                    {
+                        "name": row[0],
+                        "price": float(row[1]) if row[1] else 0.0,
+                        "quantity_sold": int(row[3]),
+                        "times_sold": int(row[4]),
+                    }
+                )
+            print(
+                f"DEBUG: Produtos populares por estoque RESULTADO: {len(top_products)}"
+            )
+
         dashboard_data = {
-            "today_sales": total_sales,  # ✅ Corrigido: total_sales -> today_sales
-            "total_revenue": total_revenue,
-            "products_sold": total_products,  # ✅ Corrigido: total_products -> products_sold
-            "customers_served": total_sales,  # ✅ Adicionado: aproximação baseada em vendas
-            "average_ticket": round(total_revenue / total_sales, 2)
-            if total_sales > 0
-            else 0.0,  # ✅ Adicionado
+            "today_sales": today_revenue,  # 🔥 CORRIGIDO: VALOR em reais das vendas de hoje
+            "total_revenue": today_revenue,  # ✅ Receita de hoje (mesmo valor)
+            "products_sold": total_products,  # ✅ Total de produtos no sistema
+            "customers_served": today_sales,  # ✅ NÚMERO de transações de hoje
+            "average_ticket": round(today_revenue / today_sales, 2)
+            if today_sales > 0
+            else 0.0,  # ✅ Ticket médio do dia
             "low_stock_alerts": low_stock_alerts,
             "recent_sales": recent_sales,
-            "top_products": [],  # Implementar depois se necessário
+            "top_products": top_products,  # 🔥 IMPLEMENTADO: produtos mais vendidos hoje
             "sales_by_period": {
-                "daily": total_sales,  # Simplificado por enquanto
-                "weekly": total_sales,
-                "monthly": total_sales,
+                "daily": today_revenue,  # 🔥 CORRIGIDO: VALOR das vendas do dia
+                "weekly": today_revenue,  # Simplificado por enquanto
+                "monthly": today_revenue,  # Simplificado por enquanto
             },
         }
 
@@ -114,15 +182,19 @@ async def get_dashboard(
         traceback.print_exc()
 
         return {
-            "today_sales": 0,
+            "today_sales": 0.0,  # 🔥 CORRIGIDO: valor em reais, não quantidade
             "total_revenue": 0.0,
             "products_sold": 0,
             "customers_served": 0,
             "average_ticket": 0.0,
             "low_stock_alerts": 0,
             "recent_sales": [],
-            "top_products": [],
-            "sales_by_period": {"daily": 0, "weekly": 0, "monthly": 0},
+            "top_products": [],  # 🔥 ADICIONADO: campo obrigatório
+            "sales_by_period": {
+                "daily": 0.0,
+                "weekly": 0.0,
+                "monthly": 0.0,
+            },  # 🔥 CORRIGIDO: valores em reais
         }
 
 
@@ -222,38 +294,82 @@ async def get_stock_alerts(
     db: Session = Depends(get_db), current_user=Depends(get_current_user)
 ):
     """
-    Alertas de estoque usando SQL direto
+    Alertas de estoque com detalhes dos produtos
     """
     print("DEBUG: /stock-alerts - Iniciando")
 
     try:
-        # Produtos com estoque baixo
+        # 🔍 MELHORAR: Query mais detalhada com informações úteis
         alerts_result = db.execute(
             text(
                 """
-            SELECT name, stock_quantity, min_stock_level
+            SELECT
+                name,
+                stock_quantity,
+                min_stock_level,
+                price,
+                (min_stock_level - stock_quantity) as deficit,
+                CASE
+                    WHEN stock_quantity <= 0 THEN 'CRÍTICO'
+                    WHEN stock_quantity <= min_stock_level * 0.5 THEN 'URGENTE'
+                    ELSE 'ATENÇÃO'
+                END as urgency_level
             FROM products
-            WHERE stock_quantity < 10
-            ORDER BY stock_quantity ASC
+            WHERE stock_quantity <= min_stock_level
+            AND is_active = true
+            ORDER BY
+                CASE
+                    WHEN stock_quantity <= 0 THEN 1
+                    WHEN stock_quantity <= min_stock_level * 0.5 THEN 2
+                    ELSE 3
+                END,
+                stock_quantity ASC
         """
             )
         )
 
         alerts = []
         for row in alerts_result:
-            alerts.append(
-                {
-                    "product_name": row[0],
-                    "current_quantity": row[1],
-                    "min_stock": row[2] if row[2] else 10,
-                }
-            )
+            alert = {
+                "product_name": row[0],
+                "current_stock": float(row[1]),
+                "min_stock_level": float(row[2]),
+                "price": float(row[3]),
+                "deficit": float(row[4]),
+                "urgency_level": row[5],
+                "action_needed": f"Comprar {int(row[4])} unidades",
+                "estimated_cost": float(row[3]) * float(row[4]),
+            }
+            alerts.append(alert)
 
-        alerts_count = len(alerts)
-        print(f"DEBUG: /stock-alerts - Encontrados {alerts_count} alertas")
+        print(f"DEBUG: Encontrados {len(alerts)} alertas de estoque")
 
-        return {"alerts_count": alerts_count, "alerts": alerts}
+        # 📊 Estatísticas dos alertas
+        total_alerts = len(alerts)
+        critical_alerts = len([a for a in alerts if a["urgency_level"] == "CRÍTICO"])
+        urgent_alerts = len([a for a in alerts if a["urgency_level"] == "URGENTE"])
+
+        return {
+            "alerts": alerts,
+            "summary": {
+                "total_alerts": total_alerts,
+                "critical": critical_alerts,
+                "urgent": urgent_alerts,
+                "attention": total_alerts - critical_alerts - urgent_alerts,
+                "total_estimated_cost": sum(a["estimated_cost"] for a in alerts),
+            },
+        }
 
     except Exception as e:
-        print(f"DEBUG: /stock-alerts - Erro: {e}")
-        return {"alerts_count": 0, "alerts": []}
+        print(f"DEBUG: Erro em /stock-alerts: {e}")
+        return {
+            "alerts": [],
+            "summary": {
+                "total_alerts": 0,
+                "critical": 0,
+                "urgent": 0,
+                "attention": 0,
+                "total_estimated_cost": 0.0,
+            },
+            "error": str(e),
+        }

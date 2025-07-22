@@ -6,16 +6,19 @@ from .base import Base
 from .customer import Customer
 from .product import Category, Product
 from .sale import Sale, SaleItem
-from .supplier import Supplier
+from .stock import PurchaseOrder, PurchaseOrderItem, StockMovement, Supplier
 from .user import User
 
 __all__ = [
     "Base",
     "User",
-    "Product",
+    "Customer",
     "Category",
+    "Supplier",
+    "Product",
     "Sale",
     "SaleItem",
-    "Customer",
-    "Supplier",
+    "StockMovement",
+    "PurchaseOrder",
+    "PurchaseOrderItem",
 ]

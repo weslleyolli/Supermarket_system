@@ -92,6 +92,10 @@ class ReportService:
             hourly_analysis = [HourlyAnalysis(**h) for h in hourly_analysis_data]
 
             print("✅ Dashboard completo gerado com sucesso!")
+
+            # Definir período
+            target_date_val = target_date or date.today()
+
             return DashboardResponse(
                 kpis=kpis,
                 top_products=top_products,
@@ -100,6 +104,9 @@ class ReportService:
                 sales_goals=sales_goals,
                 category_performance=category_performance,
                 hourly_analysis=hourly_analysis,
+                last_updated=datetime.now(),
+                period_start=target_date_val,
+                period_end=target_date_val,
             )
 
         except Exception as e:

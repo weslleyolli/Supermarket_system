@@ -153,7 +153,7 @@ class ProductResponse(ProductBase):
     category: CategoryResponse
 
     # Campos calculados
-    profit_margin: float = Field(0, description="Margem de lucro (%)")
+    profit_margin: Optional[float] = Field(None, description="Margem de lucro (%)")
     stock_status: str = Field("", description="Status do estoque")
     has_promotion: bool = Field(False, description="Tem promoção ativa")
 

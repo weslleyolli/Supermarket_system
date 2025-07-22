@@ -24,6 +24,13 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
 
+def get_database_url():
+    """
+    Retorna a URL do banco de dados
+    """
+    return settings.DATABASE_URL
+
+
 def get_db():
     """
     Dependency para obter sessão do banco de dados

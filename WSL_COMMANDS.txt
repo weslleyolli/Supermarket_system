@@ -1,0 +1,40 @@
+# COMANDOS PARA EXECUTAR NO WSL UBUNTU/LINUX
+
+# 1. Navegar até o diretório do projeto
+cd /mnt/c/Users/Osmar/Documents/oBarateiro/supermarket-system
+
+# 2. Dar permissão de execução ao script bash
+chmod +x run_db_check_wsl.sh
+
+# 3. Executar a verificação
+./run_db_check_wsl.sh
+
+# OU execute diretamente o Python:
+# python3 check_database_structure_wsl.py
+
+# OU se preferir um comando mais simples:
+python3 -c "
+import os, sys
+sys.path.append(os.getcwd())
+from app.core.config import settings
+import sqlalchemy as sa
+
+engine = sa.create_engine(settings.DATABASE_URL)
+inspector = sa.inspect(engine)
+
+print('=== VERIFICAÇÃO RÁPIDA ===')
+tables = inspector.get_table_names()
+print(f'Tabelas: {tables}')
+
+if 'products' in tables:
+    columns = [col['name'] for col in inspector.get_columns('products')]
+    print(f'Colunas em products: {columns}')
+    print(f'supplier_id existe: {\"supplier_id\" in columns}')
+
+    fks = inspector.get_foreign_keys('products')
+    print(f'Foreign Keys: {len(fks)}')
+    for fk in fks:
+        print(f'  {fk[\"constrained_columns\"]} -> {fk[\"referred_table\"]}.{fk[\"referred_columns\"]}')
+else:
+    print('❌ Tabela products não existe')
+"
